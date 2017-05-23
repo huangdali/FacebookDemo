@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.facebook.AccessToken;
@@ -19,11 +20,15 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.gson.Gson;
 import com.hdl.elog.ELog;
+import com.jwkj.facebook.bean.FBLoginResult;
 
 import org.json.JSONObject;
 
 import java.util.Arrays;
 
+/**
+ * 登录页
+ */
 public class MainActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     private TextView tvLogInfo;
@@ -33,14 +38,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ELog.hdl("到分享页面了");
-        callbackManager = CallbackManager.Factory.create();
-        final LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
+        checkLogin();
         tvLogInfo = (TextView) findViewById(R.id.tv_log_control);
         ivHeadPic = (ImageView) findViewById(R.id.iv_user_headerpic);
+        //创建回调管理器对象
+        callbackManager = CallbackManager.Factory.create();
+        //方式一，使用自带的loginbutton来调起登录
+        loginButton();
 
-        loginButton.setReadPermissions("email");
-        //loginButton.setFragment(this);//如果是在fragment里面使用登录，那么加上这一行代码
+
+        //方式二，自定义按钮调登录，使用了loginbutton就不需要写下面的代码了
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
@@ -52,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCancel() {
                         ELog.hdl("取消登录了");
+                        showMsg("取消登录了");
                     }
 
                     @Override
@@ -59,25 +67,38 @@ public class MainActivity extends AppCompatActivity {
                         ELog.hdl("登录异常了" + exception);
                     }
                 });
+    }
 
+    /**
+     * 检测是否已经登录过了
+     */
+    private void checkLogin() {
+        AccessToken currentAccessToken = AccessToken.getCurrentAccessToken();
+        if (currentAccessToken == null) {
+            ELog.hdl("当前没有登录");
+            showMsg("未登录");
+        } else {
+            showMsg("账户已登录");
+            getLoginInfo(currentAccessToken);
+        }
+    }
 
+    private void showMsg(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 使用自带的loginbutton来调起登录
+     */
+    private void loginButton() {
+        //使用facebook自带的登录按钮
+        final LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
+        loginButton.setReadPermissions("email");//设置权限
+        //loginButton.setFragment(this);//如果是在fragment里面使用登录，那么加上这一行代码
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                // App code
                 ELog.hdl("登录成功了");
-                AccessToken token = loginResult.getAccessToken();
-                ELog.hdl("getToken \t" + token.getToken());
-                tvLogInfo.append("getToken =\t" + token.getToken() + "\n\n");
-                ELog.hdl("getApplicationId \t" + token.getApplicationId());
-                ELog.hdl("getUserId \t" + token.getUserId());
-                ELog.hdl("getDeclinedPermissions \t" + token.getDeclinedPermissions());
-                ELog.hdl("getExpires \t" + token.getExpires());
-                ELog.hdl("getLastRefresh \t" + token.getLastRefresh());
-                ELog.hdl("getPermissions \t" + token.getPermissions());
-                ELog.hdl("getSource \t" + token.getSource());
-                ELog.hdl("describeContents \t" + token.describeContents());
-                ELog.hdl("isExpired \t" + token.isExpired());
                 getLoginInfo(loginResult.getAccessToken());
             }
 
@@ -115,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     ELog.hdl("获取登录结果了：" + result);
                     tvLogInfo.append(result.toString());
                     Glide.with(MainActivity.this).load(result.getPicture().getData().getUrl()).into(ivHeadPic);
+                    showMsg("登录成功");
                 }
             }
         });

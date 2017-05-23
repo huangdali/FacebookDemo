@@ -1,4 +1,4 @@
-package com.jwkj.facebook;
+package com.jwkj.facebook.bean;
 
 /**
  * facebook登录成功之后的结果
