@@ -153,4 +153,8 @@ public class MainActivity extends AppCompatActivity {
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile"));
 
     }
+
+    public void onShared(View view) {
+        startActivity(new Intent(this, SharedActivity.class));
+    }
 }
