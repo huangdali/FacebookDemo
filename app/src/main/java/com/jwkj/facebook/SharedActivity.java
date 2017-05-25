@@ -76,7 +76,7 @@ public class SharedActivity extends AppCompatActivity {
         ShareContent shareContent = new ShareMediaContent.Builder()
                 .addMedium(photo)
                 .build();
-        shareDialog.show(shareContent);
+        shareDialog.show(shareContent, ShareDialog.Mode.AUTOMATIC);
     }
 
     /**
